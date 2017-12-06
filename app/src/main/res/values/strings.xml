@@ -1,0 +1,26 @@
+<resources>
+    <string-array name="menu_array">
+        <item>My Profile   ></item>
+    </string-array>
+    <string name="drawer_open">Menu</string>
+
+
+    <string name="app_name">Locals</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="save_current_location">Save Current Location</string>
+    <string name="save_your_current_location_by_pressing_the_button_bellow">Save your current location by pressing the button bellow:</string>
+    <string name="locations_saved">Locations Saved: </string>
+    <string name="profile_info">Profile Info</string>
+    <string name="total_pictures_taken">Total Pictures Taken: </string>
+    <string name="all_saved_locations">All Saved Locations</string>
+    <string name="nothing_to_show">Nothing to show</string>
+    <string name="directions">Directions</string>
+    <string name="nearby_places">Nearby places</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="description">Description</string>
+    <string name="coordinates">Coordinates</string>
+    <string name="address">Address</string>
+    <string name="take_picture_for_location">Take picture for location</string>
+</resources>
