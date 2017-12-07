@@ -91,6 +91,52 @@
 
             </RelativeLayout>
 
+            <RelativeLayout
+                android:id="@+id/location_weather_info_btn"
+                style="@style/button_dark"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:padding="0dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/nearby_places_btn">
+
+                <ImageView
+                    android:id="@+id/location_weather_info_btn_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="13dp"
+                    android:layout_marginStart="13dp"
+                    android:src="@mipmap/ic_arrow_down" />
+
+                <TextView
+                    android:id="@+id/location_weather_info_btn_text"
+                    style="@style/buttonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:text="@string/show_weather_information" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/location_weather_info_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/location_weather_info_btn">
+
+                <include layout="@layout/location_weather_info" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/textView4"
                 style="@style/infoText"
@@ -100,7 +146,7 @@
                 android:text="@string/description"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/nearby_places_btn" />
+                app:layout_constraintTop_toBottomOf="@+id/location_weather_info_layout" />
 
             <EditText
                 android:id="@+id/description"
@@ -270,54 +316,38 @@
 
             </RelativeLayout>
 
-            <!--<GridLayout-->
-            <!--android:id="@+id/location_imgs_layout"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="16dp"-->
-            <!--android:columnCount="1"-->
-            <!--android:columnOrderPreserved="true"-->
-            <!--android:gravity="center"-->
-            <!--android:useDefaultMargins="true"-->
-            <!--app:layout_constraintLeft_toLeftOf="parent"-->
-            <!--app:layout_constraintRight_toRightOf="parent"-->
-            <!--app:layout_constraintTop_toBottomOf="@+id/take_picture_btn">-->
-
-        <!--</GridLayout>-->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/take_picture_btn"
-            android:paddingTop="16dp">
-
-
             <LinearLayout
-                android:id="@+id/left_img_column"
-                android:orientation="vertical"
-                android:layout_height="wrap_content"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:paddingRight="8dp">
-
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/right_img_column"
-                android:orientation="vertical"
                 android:layout_height="wrap_content"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:paddingLeft="8dp">
+                android:orientation="horizontal"
+                android:paddingTop="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/take_picture_btn">
+
+
+                <LinearLayout
+                    android:id="@+id/left_img_column"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingRight="8dp">
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/right_img_column"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingLeft="8dp"></LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
 
-    </android.support.constraint.ConstraintLayout>
-</ScrollView>
+    <include layout="@layout/left_drawer" />
 
-<include layout="@layout/left_drawer" />
-
-    </android.support.v4.widget.DrawerLayout>
+</android.support.v4.widget.DrawerLayout>

@@ -1,8 +1,6 @@
 package com.iivanovs.locals;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -25,22 +23,15 @@ import java.net.URL;
 
 class WeatherData extends AsyncTask<Local, Void, String> {
 
-    private Exception exception;
     private final String APIURL = "http://api.openweathermap.org/data/2.5/weather";
     private final String API_KEY = "&appid=66efe6cd305a3b36249ab9f2185f99ec";
     private final String UNITS = "&units=metric";
-    Context context;
     Activity activity;
+    LinearLayout linearLayout;
 
-    public WeatherData(Context context, Activity activity) {
-        this.context = context;
+    public WeatherData(Activity activity, LinearLayout linearLayout) {
         this.activity = activity;
-    }
-
-    protected void onPreExecute() {
-//        this.context =context;
-//        progressBar.setVisibility(View.VISIBLE);
-//        responseView.setText("");
+        this.linearLayout = linearLayout;
     }
 
     protected String doInBackground(Local... local) {
@@ -68,17 +59,26 @@ class WeatherData extends AsyncTask<Local, Void, String> {
     }
 
     protected void onPostExecute(String response) {
-        LinearLayout weather_info_layout;
         TextView cityField, weather_deckField, tempField, min_maxField, windField, cloudField;
         ImageView weather_icon;
-        weather_info_layout = (LinearLayout) activity.findViewById(R.id.weather_info_layout);
-        cityField = (TextView) activity.findViewById(R.id.city);
-        weather_deckField = (TextView) activity.findViewById(R.id.weather_deck);
-        tempField = (TextView) activity.findViewById(R.id.temp);
-        min_maxField = (TextView) activity.findViewById(R.id.min_max);
-        windField = (TextView) activity.findViewById(R.id.wind);
-        cloudField = (TextView) activity.findViewById(R.id.cloud);
-        weather_icon = (ImageView) activity.findViewById(R.id.weather_icon);
+
+        if (linearLayout.getId() == R.id.weather_info_layout) {
+            cityField = (TextView) activity.findViewById(R.id.city);
+            weather_deckField = (TextView) activity.findViewById(R.id.weather_deck);
+            tempField = (TextView) activity.findViewById(R.id.temp);
+            min_maxField = (TextView) activity.findViewById(R.id.min_max);
+            windField = (TextView) activity.findViewById(R.id.wind);
+            cloudField = (TextView) activity.findViewById(R.id.cloud);
+            weather_icon = (ImageView) activity.findViewById(R.id.weather_icon);
+        } else {
+            cityField = (TextView) activity.findViewById(R.id.location_city);
+            weather_deckField = (TextView) activity.findViewById(R.id.location_weather_deck);
+            tempField = (TextView) activity.findViewById(R.id.location_temp);
+            min_maxField = (TextView) activity.findViewById(R.id.location_min_max);
+            windField = (TextView) activity.findViewById(R.id.location_wind);
+            cloudField = (TextView) activity.findViewById(R.id.location_cloud);
+            weather_icon = (ImageView) activity.findViewById(R.id.location_weather_icon);
+        }
 
         JSONObject obj;
         if (response == null) {
@@ -116,7 +116,7 @@ class WeatherData extends AsyncTask<Local, Void, String> {
             Bitmap bm = BitmapFactory.decodeResource(activity.getResources(), resId);
             weather_icon.setImageBitmap(bm);
 
-            weather_info_layout.setVisibility(View.VISIBLE);
+            linearLayout.setVisibility(View.VISIBLE);
 
             Log.i("INFO", response);
 

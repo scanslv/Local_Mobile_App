@@ -3,8 +3,6 @@ package com.iivanovs.locals;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
@@ -19,9 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -51,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         super.onRestart();
         locationList = (ArrayList<Local>) db.getAllLocals();
         displayLocationList();
-
     }
 
     @Override
@@ -88,14 +83,14 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle(getTitle());
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
                 actionBar.setTitle(mDrawerTitle);
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -137,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
                 getProfileInfo();
             }
@@ -155,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 profile_info_layout.setVisibility(View.INVISIBLE);
-                weather_info_layout.setVisibility(View.INVISIBLE);
                 getWeatherInfo();
             }
         });
@@ -198,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
 
     @Override
@@ -208,17 +200,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getProfileInfo() {
-        int locationSaved = db.getAllLocals().size();
-        int picturesTaken = db.getTotalLocalImgs().size();
+        if (profile_info_layout.getVisibility() == View.VISIBLE)
+            profile_info_layout.setVisibility(View.INVISIBLE);
+        else {
+            int locationSaved = db.getAllLocals().size();
+            int picturesTaken = db.getTotalLocalImgs().size();
 
-        locations_saved.setText(getString(R.string.locations_saved) + " " + String.valueOf(locationSaved));
-        pictures_taken.setText(getString(R.string.total_pictures_taken) + " " + String.valueOf(picturesTaken));
-        profile_info_layout.setVisibility(View.VISIBLE);
+            locations_saved.setText(getString(R.string.locations_saved) + " " + String.valueOf(locationSaved));
+            pictures_taken.setText(getString(R.string.total_pictures_taken) + " " + String.valueOf(picturesTaken));
+            profile_info_layout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void getWeatherInfo() {
-        new WeatherData(MainActivity.this, this).execute(new Local("Current location", "53.3379581", "-6.2650733"));
-        weather_info_layout.setVisibility(View.VISIBLE);
+        if (weather_info_layout.getVisibility() == View.VISIBLE)
+            weather_info_layout.setVisibility(View.INVISIBLE);
+        else
+            new WeatherData(this, weather_info_layout).execute(new Local("Current location", "53.3379581", "-6.2650733"));
     }
 
     private void displayLocationList() {

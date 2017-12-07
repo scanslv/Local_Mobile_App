@@ -1,5 +1,6 @@
 package com.iivanovs.locals;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,16 +8,11 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.FileProvider;
@@ -27,7 +23,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,8 +33,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -58,6 +51,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class LocationDetailsActivity extends AppCompatActivity {
+    Activity thisActivity;
+    boolean weather_displayed = false;
     String mCurrentPhotoPath;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private final String LOCATION_ID = "LOCATION_ID";
@@ -67,10 +62,10 @@ public class LocationDetailsActivity extends AppCompatActivity {
     private ActionBar actionBar;
     TextView locations_saved, pictures_taken, coordinates, address, address_title;
     EditText description;
-    LinearLayout profile_info_layout, weather_info_layout;
+    LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
     ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
-            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn;
+            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, location_weather_info_btn;
     DBManager db;
     Local local;
 
@@ -78,6 +73,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_details);
+        thisActivity = this;
         int id = getIntent().getIntExtra(LOCATION_ID, -1);
 
         db = new DBManager(this);
@@ -106,6 +102,8 @@ public class LocationDetailsActivity extends AppCompatActivity {
         profile_info_layout.setVisibility(View.INVISIBLE);
         weather_info_layout = (LinearLayout) findViewById(R.id.weather_info_layout);
         weather_info_layout.setVisibility(View.INVISIBLE);
+        location_weather_info_layout = (LinearLayout) findViewById(R.id.location_weather_info_layout);
+        location_weather_info_layout.setVisibility(View.GONE);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -117,14 +115,14 @@ public class LocationDetailsActivity extends AppCompatActivity {
                 actionBar.setTitle(getTitle());
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
                 actionBar.setTitle(mDrawerTitle);
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -147,6 +145,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
         profile_info_btn = (RelativeLayout) findViewById(R.id.profile_info_btn);
         weather_btn = (RelativeLayout) findViewById(R.id.weather_btn);
+        location_weather_info_btn = (RelativeLayout) findViewById(R.id.location_weather_info_btn);
         all_locationds_btn = (RelativeLayout) findViewById(R.id.all_locationds_btn);
         directions_btn = (RelativeLayout) findViewById(R.id.directions_btn);
         nearby_places_btn = (RelativeLayout) findViewById(R.id.nearby_places_btn);
@@ -157,7 +156,6 @@ public class LocationDetailsActivity extends AppCompatActivity {
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
                 getProfileInfo();
             }
@@ -175,7 +173,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 profile_info_layout.setVisibility(View.INVISIBLE);
-                weather_info_layout.setVisibility(View.INVISIBLE);
+                getWeatherInfo();
             }
         });
 
@@ -190,6 +188,29 @@ public class LocationDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+
+        location_weather_info_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageView btn_image = (ImageView) findViewById(R.id.location_weather_info_btn_icon);
+                TextView btn_text = (TextView) findViewById(R.id.location_weather_info_btn_text);
+                if (!weather_displayed) {
+                    weather_displayed = true;
+                    new WeatherData(thisActivity, location_weather_info_layout).execute(local);
+                    btn_text.setText(R.string.hide_weather_information);
+                    int resId = thisActivity.getResources().getIdentifier("ic_arrow_up", "mipmap", thisActivity.getPackageName());
+                    Bitmap bm = BitmapFactory.decodeResource(thisActivity.getResources(), resId);
+                    btn_image.setImageBitmap(bm);
+                } else {
+                    weather_displayed = false;
+                    location_weather_info_layout.setVisibility(View.GONE);
+                    btn_text.setText(R.string.show_weather_information);
+                    int resId = thisActivity.getResources().getIdentifier("ic_arrow_down", "mipmap", thisActivity.getPackageName());
+                    Bitmap bm = BitmapFactory.decodeResource(thisActivity.getResources(), resId);
+                    btn_image.setImageBitmap(bm);
+                }
             }
         });
 
@@ -242,7 +263,6 @@ public class LocationDetailsActivity extends AppCompatActivity {
         ArrayList<LocalImg> localImgs;
         localImgs = (ArrayList<LocalImg>) db.getAllLocalImgs(local.getId());
 
-//        ViewGroup parent = (ViewGroup) findViewById(R.id.location_imgs_layout);
         ViewGroup parentLeft = (ViewGroup) findViewById(R.id.left_img_column);
         ViewGroup parentRight = (ViewGroup) findViewById(R.id.right_img_column);
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -257,8 +277,6 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
                 ImageView img = (ImageView) view.findViewById(R.id.location_image);
                 ImageView delete_btn = (ImageView) view.findViewById(R.id.remove_location_image);
-//                Bitmap bitmap = BitmapFactory.decodeFile(locationImg.getImg_path());
-//                img.setImageBitmap(bitmap);
                 setPic(img, locationImg.getImg_path());
 
                 delete_btn.setOnClickListener(new View.OnClickListener() {
@@ -340,17 +358,23 @@ public class LocationDetailsActivity extends AppCompatActivity {
     }
 
     private void getProfileInfo() {
-        int locationSaved = db.getAllLocals().size();
-        int picturesTaken = db.getTotalLocalImgs().size();
+        if (profile_info_layout.getVisibility() == View.VISIBLE)
+            profile_info_layout.setVisibility(View.INVISIBLE);
+        else {
+            int locationSaved = db.getAllLocals().size();
+            int picturesTaken = db.getTotalLocalImgs().size();
 
-        locations_saved.setText(getString(R.string.locations_saved) + " " + String.valueOf(locationSaved));
-        pictures_taken.setText(getString(R.string.total_pictures_taken) + " " + String.valueOf(picturesTaken));
-        profile_info_layout.setVisibility(View.VISIBLE);
+            locations_saved.setText(getString(R.string.locations_saved) + " " + String.valueOf(locationSaved));
+            pictures_taken.setText(getString(R.string.total_pictures_taken) + " " + String.valueOf(picturesTaken));
+            profile_info_layout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void getWeatherInfo() {
-        new WeatherData(LocationDetailsActivity.this, this).execute(new Local("Current location", "53.3379581", "-6.2650733"));
-        weather_info_layout.setVisibility(View.VISIBLE);
+        if (weather_info_layout.getVisibility() == View.VISIBLE)
+            weather_info_layout.setVisibility(View.INVISIBLE);
+        else
+            new WeatherData(this, weather_info_layout).execute(new Local("Current location", "53.3379581", "-6.2650733"));
     }
 
     @Override
@@ -449,22 +473,17 @@ public class LocationDetailsActivity extends AppCompatActivity {
                 int width = layout.getMeasuredWidth();
                 int height = layout.getMeasuredHeight();
 
-
-                // Get the dimensions of the View
                 int targetW = width;
                 int targetH = height;
 
-                // Get the dimensions of the bitmap
                 BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                 bmOptions.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(img_path, bmOptions);
                 int photoW = bmOptions.outWidth;
                 int photoH = bmOptions.outHeight;
 
-                // Determine how much to scale down the image
                 int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
 
-                // Decode the image file into a Bitmap sized to fill the View
                 bmOptions.inJustDecodeBounds = false;
                 bmOptions.inSampleSize = scaleFactor;
                 bmOptions.inPurgeable = true;
@@ -472,12 +491,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
                 Bitmap bitmap = BitmapFactory.decodeFile(img_path, bmOptions);
                 imageView.setImageBitmap(bitmap);
-
             }
         });
-
-
     }
-
-
 }

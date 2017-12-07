@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/city"
+        android:id="@+id/location_city"
         style="@style/infoTextLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,40 +15,40 @@
         android:gravity="center_horizontal" />
 
     <ImageView
-        android:id="@+id/weather_icon"
+        android:id="@+id/location_weather_icon"
         android:layout_width="100dp"
         android:layout_height="100dp" />
 
     <TextView
-        android:id="@+id/weather_deck"
+        android:id="@+id/location_weather_deck"
         style="@style/infoTextMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" />
 
     <TextView
-        android:id="@+id/temp"
+        android:id="@+id/location_temp"
         style="@style/infoTextLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" />
 
     <TextView
-        android:id="@+id/min_max"
+        android:id="@+id/location_min_max"
         style="@style/infoText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" />
 
     <TextView
-        android:id="@+id/wind"
+        android:id="@+id/location_wind"
         style="@style/infoText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" />
 
     <TextView
-        android:id="@+id/cloud"
+        android:id="@+id/location_cloud"
         style="@style/infoText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
