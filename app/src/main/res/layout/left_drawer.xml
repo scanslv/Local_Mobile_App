@@ -8,7 +8,8 @@
     android:layout_gravity="start"
     android:background="@color/colorGreyDark"
     android:choiceMode="singleChoice"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:clickable="true">
 
     <RelativeLayout
         android:id="@+id/profile_info_btn"
