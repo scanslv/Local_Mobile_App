@@ -67,9 +67,10 @@ public class LocationDetailsActivity extends AppCompatActivity {
     private ActionBar actionBar;
     TextView locations_saved, pictures_taken, coordinates, address, address_title;
     EditText description;
-    LinearLayout profile_info_layout;
+    LinearLayout profile_info_layout, weather_info_layout;
     ImageView img_view;
-    RelativeLayout profile_info_btn, directions_btn, nearby_places_btn, save_btn, delete_btn, take_picture_btn;
+    RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
+            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn;
     DBManager db;
     Local local;
 
@@ -103,6 +104,8 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
         profile_info_layout = (LinearLayout) findViewById(R.id.profile_info_layout);
         profile_info_layout.setVisibility(View.INVISIBLE);
+        weather_info_layout = (LinearLayout) findViewById(R.id.weather_info_layout);
+        weather_info_layout.setVisibility(View.INVISIBLE);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -113,12 +116,14 @@ public class LocationDetailsActivity extends AppCompatActivity {
             public void onDrawerClosed(View view) {
                 actionBar.setTitle(getTitle());
                 profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             public void onDrawerOpened(View drawerView) {
                 actionBar.setTitle(mDrawerTitle);
                 profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
@@ -141,6 +146,8 @@ public class LocationDetailsActivity extends AppCompatActivity {
     private void setButtonListeners() {
 
         profile_info_btn = (RelativeLayout) findViewById(R.id.profile_info_btn);
+        weather_btn = (RelativeLayout) findViewById(R.id.weather_btn);
+        all_locationds_btn = (RelativeLayout) findViewById(R.id.all_locationds_btn);
         directions_btn = (RelativeLayout) findViewById(R.id.directions_btn);
         nearby_places_btn = (RelativeLayout) findViewById(R.id.nearby_places_btn);
         save_btn = (RelativeLayout) findViewById(R.id.save_btn);
@@ -150,10 +157,25 @@ public class LocationDetailsActivity extends AppCompatActivity {
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (profile_info_layout.getVisibility() == View.VISIBLE)
-                    profile_info_layout.setVisibility(View.INVISIBLE);
-                else
-                    getProfileInfo();
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
+                getProfileInfo();
+            }
+        });
+
+        all_locationds_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        weather_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -326,6 +348,11 @@ public class LocationDetailsActivity extends AppCompatActivity {
         profile_info_layout.setVisibility(View.VISIBLE);
     }
 
+    private void getWeatherInfo() {
+        new WeatherData(LocationDetailsActivity.this, this).execute(new Local("Current location", "53.3379581", "-6.2650733"));
+        weather_info_layout.setVisibility(View.VISIBLE);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -413,13 +440,13 @@ public class LocationDetailsActivity extends AppCompatActivity {
     }
 
     private void setPic(final ImageView imageView, final String img_path) {
-        final LinearLayout layout = (LinearLayout)findViewById(R.id.left_img_column);
+        final LinearLayout layout = (LinearLayout) findViewById(R.id.left_img_column);
         ViewTreeObserver vto = layout.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                int width  = layout.getMeasuredWidth();
+                int width = layout.getMeasuredWidth();
                 int height = layout.getMeasuredHeight();
 
 
@@ -448,7 +475,6 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
             }
         });
-
 
 
     }
