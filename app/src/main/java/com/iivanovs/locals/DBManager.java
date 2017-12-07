@@ -48,8 +48,8 @@ public class DBManager extends SQLiteOpenHelper {
     // Create LOCAL_IMG table statements
     private static final String CREATE_LOCAL_IMG_TABLE = "create table " + TABLE_LOCAL_IMG + " (" +
             COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            COL_IMG_PATH + " text, " +
             COL_LOCAL_ID + " INTEGER, " +
-            COL_IMG_PATH + " INTEGER, " +
             "FOREIGN KEY(" + COL_LOCAL_ID + ") REFERENCES " + TABLE_LOCAL + "(_ID))";
 
 
@@ -179,7 +179,6 @@ public class DBManager extends SQLiteOpenHelper {
         values.put(COL_IMG_PATH, localImg.getImg_path());
         values.put(COL_LOCAL_ID, localImg.getLocal_id());
 
-        // insert row
         long id = db.insert(TABLE_LOCAL_IMG, null, values);
 
         return id;
