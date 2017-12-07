@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private ActionBar actionBar;
-    LinearLayout profile_info_layout;
-    RelativeLayout profile_info_btn;
+    LinearLayout profile_info_layout, weather_info_layout;
+    RelativeLayout profile_info_btn, weather_btn, all_locationds_btn;
     TextView locations_saved, pictures_taken;
     LinearLayout location_layout;
     DBManager db;
@@ -75,18 +75,8 @@ public class MainActivity extends AppCompatActivity {
 
         profile_info_layout = (LinearLayout) findViewById(R.id.profile_info_layout);
         profile_info_layout.setVisibility(View.INVISIBLE);
-
-        profile_info_btn = (RelativeLayout) findViewById(R.id.profile_info_btn);
-
-        profile_info_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (profile_info_layout.getVisibility() == View.VISIBLE)
-                    profile_info_layout.setVisibility(View.INVISIBLE);
-                else
-                    getProfileInfo();
-            }
-        });
+        weather_info_layout = (LinearLayout) findViewById(R.id.weather_info_layout);
+        weather_info_layout.setVisibility(View.INVISIBLE);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -97,12 +87,14 @@ public class MainActivity extends AppCompatActivity {
             public void onDrawerClosed(View view) {
                 actionBar.setTitle(getTitle());
                 profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             public void onDrawerOpened(View drawerView) {
                 actionBar.setTitle(mDrawerTitle);
                 profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
@@ -124,7 +116,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.mainLayout).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return hideKeyboard();
+            }
+        });
+
+        setButtonListeners();
+        displayLocationList();
+    }
+
+    private void setButtonListeners() {
+
+        profile_info_btn = (RelativeLayout) findViewById(R.id.profile_info_btn);
+        weather_btn = (RelativeLayout) findViewById(R.id.weather_btn);
+        all_locationds_btn = (RelativeLayout) findViewById(R.id.all_locationds_btn);
         save_current_location_btn = (RelativeLayout) findViewById(R.id.save_current_location_btn);
+
+        profile_info_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
+                getProfileInfo();
+            }
+        });
+
+        all_locationds_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        weather_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profile_info_layout.setVisibility(View.INVISIBLE);
+                weather_info_layout.setVisibility(View.INVISIBLE);
+                getWeatherInfo();
+            }
+        });
+
         save_current_location_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,15 +170,6 @@ public class MainActivity extends AppCompatActivity {
                 hideKeyboard();
             }
         });
-
-        findViewById(R.id.mainLayout).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return hideKeyboard();
-            }
-        });
-
-        displayLocationList();
     }
 
     @Override
@@ -188,6 +214,11 @@ public class MainActivity extends AppCompatActivity {
         locations_saved.setText(getString(R.string.locations_saved) + " " + String.valueOf(locationSaved));
         pictures_taken.setText(getString(R.string.total_pictures_taken) + " " + String.valueOf(picturesTaken));
         profile_info_layout.setVisibility(View.VISIBLE);
+    }
+
+    private void getWeatherInfo() {
+        new WeatherData(MainActivity.this, this).execute(new Local("Current location", "53.3379581", "-6.2650733"));
+        weather_info_layout.setVisibility(View.VISIBLE);
     }
 
     private void displayLocationList() {
