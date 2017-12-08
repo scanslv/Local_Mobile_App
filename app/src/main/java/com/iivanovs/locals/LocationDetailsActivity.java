@@ -271,7 +271,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
 
         if (localImgs.size() != 0) {
 
-            for (int i = 0; i < localImgs.size(); i++) {
+            for (int i = localImgs.size() - 1; i >= 0; i--) {
                 final LocalImg locationImg = localImgs.get(i);
                 View view = inflater.inflate(R.layout.img_layout, null);
 

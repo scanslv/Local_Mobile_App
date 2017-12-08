@@ -156,10 +156,6 @@ public class MainActivity extends AppCompatActivity {
         save_current_location_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Local local = new Local("Dit", "53.3379581", "-6.2650733");
-                db.createLocal(local);
-                locationList = (ArrayList<Local>) db.getAllLocals();
-                displayLocationList();
                 hideKeyboard();
             }
         });
@@ -231,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             parent.removeAllViews();
 
-            for (int i = 0; i < locationList.size(); i++) {
+            for (int i = locationList.size()-1; i >= 0; i--) {
                 final Local location = locationList.get(i);
                 View view = inflater.inflate(R.layout.location_layout, null);
 
