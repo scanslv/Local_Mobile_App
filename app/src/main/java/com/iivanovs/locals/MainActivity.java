@@ -1,14 +1,19 @@
 package com.iivanovs.locals;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,25 +27,44 @@ import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.iivanovs.locals.entity.Local;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private final String LOCATION_ID = "LOCATION_ID";
     private SearchView searchBar;
     private RelativeLayout save_current_location_btn;
+
+    private FusedLocationProviderClient mFusedLocationClient;
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private ActionBar actionBar;
     LinearLayout profile_info_layout, weather_info_layout;
-    RelativeLayout profile_info_btn, weather_btn, all_locationds_btn;
+    RelativeLayout profile_info_btn, weather_btn, all_locationds_btn, map_btn;
     TextView locations_saved, pictures_taken;
     LinearLayout location_layout;
     DBManager db;
     ArrayList<Local> locationList;
+
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    private Location mLastLocation;
+    private GoogleApiClient mGoogleApiClient;
+    private boolean mRequestingLocationUpdates = false;
+    private LocationRequest mLocationRequest;
+    private static int UPDATE_INTERVAL = 10000; // 10 sec
+    private static int FATEST_INTERVAL = 5000; // 5 sec
+    private static int DISPLACEMENT = 10; // 10 meters
+    private static int LOCATION_COUNTER = 1;
+    Local local;
+
 
     @Override
     protected void onRestart() {
@@ -72,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
         profile_info_layout.setVisibility(View.INVISIBLE);
         weather_info_layout = (LinearLayout) findViewById(R.id.weather_info_layout);
         weather_info_layout.setVisibility(View.INVISIBLE);
+
+        map_btn = (RelativeLayout) findViewById(R.id.map_btn);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -118,6 +144,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        buildGoogleApiClient();
+
         setButtonListeners();
         displayLocationList();
     }
@@ -128,6 +156,13 @@ public class MainActivity extends AppCompatActivity {
         weather_btn = (RelativeLayout) findViewById(R.id.weather_btn);
         all_locationds_btn = (RelativeLayout) findViewById(R.id.all_locationds_btn);
         save_current_location_btn = (RelativeLayout) findViewById(R.id.save_current_location_btn);
+
+        map_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            }
+        });
 
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,7 +191,9 @@ public class MainActivity extends AppCompatActivity {
         save_current_location_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideKeyboard();
+                displayLocation();
+                db.createLocal(local);
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
             }
         });
     }
@@ -261,4 +298,74 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         return true;
     }
+    //location stuff code
+    private void displayLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION }, 1);
+            return;
+        }
+        mLastLocation = LocationServices.FusedLocationApi
+                .getLastLocation(mGoogleApiClient);
+
+        if (mLastLocation != null) {
+            System.out.println("Location received...");
+            local = new Local();
+            local.setDescription("Location no." + LOCATION_COUNTER);
+            local.setLat(String.valueOf(mLastLocation.getLatitude()));
+            local.setLon(String.valueOf(mLastLocation.getLongitude()));
+
+            incrementCounter();
+
+            locationList = (ArrayList<Local>) db.getAllLocals();
+            displayLocationList();
+            hideKeyboard();
+
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    /**
+     * Google api callback methods
+     */
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i(MainActivity.class.getSimpleName(), "Connection failed: ConnectionResult.getErrorCode() = "
+                + result.getErrorCode());
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+
+        // Once connected with google api, get the location
+        displayLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int arg0) {
+        mGoogleApiClient.connect();
+    }
+
+    public static void incrementCounter(){ LOCATION_COUNTER++; }
+
+    public static int getCounter(){ return LOCATION_COUNTER; }
 }

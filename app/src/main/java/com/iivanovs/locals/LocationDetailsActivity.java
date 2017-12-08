@@ -12,6 +12,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
@@ -22,7 +23,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,7 +65,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
     LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
     ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
-            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, location_weather_info_btn;
+            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn, location_weather_info_btn;
     DBManager db;
     Local local;
 
@@ -104,6 +104,9 @@ public class LocationDetailsActivity extends AppCompatActivity {
         weather_info_layout.setVisibility(View.INVISIBLE);
         location_weather_info_layout = (LinearLayout) findViewById(R.id.location_weather_info_layout);
         location_weather_info_layout.setVisibility(View.GONE);
+
+        map_btn = (RelativeLayout) findViewById(R.id.map_btn);
+
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -166,6 +169,7 @@ public class LocationDetailsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
+                startActivity(new Intent(LocationDetailsActivity.this, MainActivity.class));
             }
         });
 
@@ -180,6 +184,12 @@ public class LocationDetailsActivity extends AppCompatActivity {
         directions_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(LocationDetailsActivity.this, MapsActivity.class);
+                intent.putExtra("Option", "Directions");
+                intent.putExtra("Lat", Double.parseDouble(local.getLat()));
+                intent.putExtra("Lon", Double.parseDouble(local.getLon()));
+                intent.putExtra("Description", local.getDescription());
+                startActivity(intent);
 
             }
         });
@@ -187,7 +197,11 @@ public class LocationDetailsActivity extends AppCompatActivity {
         nearby_places_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent(LocationDetailsActivity.this, MapsActivity.class);
+                intent.putExtra("Option", "NearbyLocations");
+                intent.putExtra("Lat", Double.parseDouble(local.getLat()));
+                intent.putExtra("Lon", Double.parseDouble(local.getLon()));
+                startActivity(intent);
             }
         });
 
@@ -255,6 +269,13 @@ public class LocationDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dispatchTakePictureIntent();
+            }
+        });
+
+        map_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LocationDetailsActivity.this, MapsActivity.class));
             }
         });
     }
