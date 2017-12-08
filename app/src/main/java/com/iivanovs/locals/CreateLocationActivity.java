@@ -50,10 +50,10 @@ public class CreateLocationActivity extends AppCompatActivity {
     private ActionBar actionBar;
     TextView locations_saved, pictures_taken, coordinates, address, address_title;
     EditText description;
-    LinearLayout profile_info_layout, weather_info_layout;
+    LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
     ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
-            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn;
+            save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn, location_weather_info_btn;
     DBManager db;
     Local local;
 
@@ -149,6 +149,12 @@ public class CreateLocationActivity extends AppCompatActivity {
 
         take_picture_btn = (RelativeLayout) findViewById(R.id.take_picture_btn);
         take_picture_btn.setVisibility(View.GONE);
+
+        location_weather_info_btn = (RelativeLayout) findViewById(R.id.location_weather_info_btn);
+        location_weather_info_btn.setVisibility(View.GONE);
+
+        location_weather_info_layout = (LinearLayout) findViewById(R.id.location_weather_info_layout);
+        location_weather_info_layout.setVisibility(View.GONE);
 
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,7 +268,7 @@ public class CreateLocationActivity extends AppCompatActivity {
     }
 
     private void getWeatherInfo() {
-        new WeatherData(CreateLocationActivity.this, this).execute(new Local("Current location", "53.3379581", "-6.2650733"));
+        new WeatherData(CreateLocationActivity.this, null).execute(new Local("Current location", "53.3379581", "-6.2650733"));
         weather_info_layout.setVisibility(View.VISIBLE);
     }
     private boolean hideKeyboard() {
