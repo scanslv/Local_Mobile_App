@@ -5,6 +5,8 @@
     <string name="drawer_open">Menu</string>
 
 
+    <string name="google_maps_key">AIzaSyCjMozeg-LO1eA7PqQw7iGWnriL9lZSfsk</string>
+
     <string name="app_name">Locals</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">MainActivity</string>
@@ -18,11 +20,13 @@
     <string name="directions">Directions</string>
     <string name="nearby_places">Nearby places</string>
     <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="description">Description</string>
     <string name="coordinates">Coordinates</string>
     <string name="address">Address</string>
     <string name="take_picture_for_location">Take picture for location</string>
+    <string name="map_string">Map</string>
     <string name="current_weather">Current Weather</string>
     <string name="show_weather_information">Show Weather Information</string>
     <string name="hide_weather_information">Hide Weather Information</string>
