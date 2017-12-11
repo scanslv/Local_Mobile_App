@@ -144,15 +144,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, 13.0f));
                 LatLng destination = new LatLng(intent.getDoubleExtra("Lat", 0), intent.getDoubleExtra("Lon", 0));
 
-
-//                 Object dataTransfer[] = new Object[3];
-//                 String url = getDirectionsUrl(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
-//                 GetDirectionsData getDirectionsData = new GetDirectionsData();
-//                 dataTransfer[0] = mMap;
-//                 dataTransfer[1] = url;
-//                 dataTransfer[2] = destination;
-//                 getDirectionsData.execute(dataTransfer);
-
                 System.out.println("System out stuff printing...." + destination.toString());
                  Geocoder geocoder;
                  List<Address> addresses;
@@ -217,19 +208,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
-
-
-//    Is used with GetDirectionsData, DataParser and commented out code in currentLocation() method
-//    to draw a path/direction on the map activity
-//    private String getDirectionsUrl(double latitude, double longitude, double end_latitude, double end_longitude)
-//    {
-//        StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
-//        googleDirectionsUrl.append("origin="+latitude+","+longitude);
-//        googleDirectionsUrl.append("&destination="+end_latitude+","+end_longitude);
-//        googleDirectionsUrl.append("&key="+"AIzaSyCAcfy-02UHSu2F6WeQ1rhQhkCr51eBL9g");
-//
-//        return googleDirectionsUrl.toString();
-//    }
 }

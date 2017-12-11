@@ -224,32 +224,10 @@ public class DBManager extends SQLiteOpenHelper {
                 new String[]{String.valueOf(localImg.getId())});
     }
 
-    public void eraseLocalTable() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        final String ERASE_LOCAL_TABLE = "delete from " + TABLE_LOCAL;
-
-        db.execSQL(ERASE_LOCAL_TABLE);
-        db.close();
-    }
-
-    public void eraseLocalImgTable() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        final String ERASE_LOCAL_TABLE = "delete from " + TABLE_LOCAL_IMG;
-
-        db.execSQL(ERASE_LOCAL_TABLE);
-        db.close();
-    }
-
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Date date = new Date();
         return dateFormat.format(date);
-    }
-
-    public int getSize(){
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        return (int) DatabaseUtils.queryNumEntries(db, TABLE_LOCAL);
     }
 }

@@ -3,11 +3,6 @@ package com.iivanovs.locals;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Address;
-import android.location.Geocoder;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.view.GravityCompat;
@@ -20,10 +15,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -31,27 +24,16 @@ import android.widget.Toast;
 
 import com.iivanovs.locals.entity.Local;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-/**
- * Created by c12437908 on 12/8/2017.
- */
-
 public class CreateLocationActivity extends AppCompatActivity {
 
-    String mCurrentPhotoPath;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     private final String LOCATION_ID = "LOCATION_ID";
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private ActionBar actionBar;
-    TextView locations_saved, pictures_taken, coordinates, address, address_title;
+    TextView locations_saved, pictures_taken, coordinates, address;
     EditText description;
     LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
-    ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
             save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn, location_weather_info_btn;
     DBManager db;
@@ -276,84 +258,5 @@ public class CreateLocationActivity extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         return true;
-    }
-
-    private class GetAddressPositionTask extends AsyncTask<Local, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            address_title = (TextView) findViewById(R.id.address_title);
-            address_title.setVisibility(View.INVISIBLE);
-        }
-
-        @Override
-        protected String doInBackground(Local... params) {
-            Geocoder geocoder;
-            List<Address> addresses;
-            String addr = "";
-            try {
-                geocoder = new Geocoder(CreateLocationActivity.this, Locale.getDefault());
-
-                addresses = geocoder.getFromLocation(Double.parseDouble(local.getLat()), Double.parseDouble(local.getLon()), 1);
-                if (addresses != null && addresses.size() > 0) {
-                    addr = addresses.get(0).getAddressLine(0) + ", " +
-                            addresses.get(0).getLocality() + ", " +
-                            addresses.get(0).getAdminArea() + ", " +
-                            addresses.get(0).getCountryName();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return addr;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            if (!result.equalsIgnoreCase("")) {
-                address_title.setVisibility(View.VISIBLE);
-                address.setText(result);
-            }
-        }
-    }
-
-    private void setPic(final ImageView imageView, final String img_path) {
-        final LinearLayout layout = (LinearLayout) findViewById(R.id.left_img_column);
-        ViewTreeObserver vto = layout.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                int width = layout.getMeasuredWidth();
-                int height = layout.getMeasuredHeight();
-
-
-                // Get the dimensions of the View
-                int targetW = width;
-                int targetH = height;
-
-                // Get the dimensions of the bitmap
-                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-                bmOptions.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(img_path, bmOptions);
-                int photoW = bmOptions.outWidth;
-                int photoH = bmOptions.outHeight;
-
-                // Determine how much to scale down the image
-                int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
-
-                // Decode the image file into a Bitmap sized to fill the View
-                bmOptions.inJustDecodeBounds = false;
-                bmOptions.inSampleSize = scaleFactor;
-                bmOptions.inPurgeable = true;
-                bmOptions.inScaled = true;
-
-                Bitmap bitmap = BitmapFactory.decodeFile(img_path, bmOptions);
-                imageView.setImageBitmap(bitmap);
-
-            }
-        });
-
-
     }
 }

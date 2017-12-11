@@ -63,7 +63,6 @@ public class LocationDetailsActivity extends AppCompatActivity {
     TextView locations_saved, pictures_taken, coordinates, address, address_title;
     EditText description;
     LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
-    ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
             save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn, location_weather_info_btn;
     DBManager db;
