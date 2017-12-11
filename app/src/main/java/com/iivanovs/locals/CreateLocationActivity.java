@@ -198,7 +198,8 @@ public class CreateLocationActivity extends AppCompatActivity {
         delete_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(CreateLocationActivity.this, MapsActivity.class));
+                //startActivity(new Intent(CreateLocationActivity.this, MapsActivity.class));
+                CreateLocationActivity.super.onBackPressed();
             }
         });
 

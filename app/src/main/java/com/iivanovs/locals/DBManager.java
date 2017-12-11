@@ -3,6 +3,7 @@ package com.iivanovs.locals;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -244,5 +245,11 @@ public class DBManager extends SQLiteOpenHelper {
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    public int getSize(){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        return (int) DatabaseUtils.queryNumEntries(db, TABLE_LOCAL);
     }
 }

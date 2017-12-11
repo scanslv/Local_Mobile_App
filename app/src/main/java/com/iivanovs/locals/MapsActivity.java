@@ -10,18 +10,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -34,16 +33,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private String intentOption = "Nothing";
 
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private Location mLastLocation;
-    private ActionBar actionBar;
     private GoogleApiClient mGoogleApiClient;
-    private boolean mRequestingLocationUpdates = false;
-    private LocationRequest mLocationRequest;
-    private static int UPDATE_INTERVAL = 10000; // 10 sec
-    private static int FATEST_INTERVAL = 5000; // 5 sec
-    private static int DISPLACEMENT = 10; // 10 meters
-    private static int LOCATION_COUNTER = 1;
     private static LatLng origin;
 
     @Override
@@ -89,10 +80,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         for(int i = 0; i < db.getAllLocals().size(); i++){
-            MarkerOptions marker = new MarkerOptions()
+            final int j = i;
+            final MarkerOptions markerO = new MarkerOptions()
                     .position(new LatLng(Double.parseDouble(db.getAllLocals().get(i).getLat()), Double.parseDouble(db.getAllLocals().get(i).getLon())))
                     .title(db.getAllLocals().get(i).getDescription());
-            mMap.addMarker(marker);
+
+            final Marker m = mMap.addMarker(markerO);
+            //mMap.addMarker(markerO);
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    marker = m;
+                    Intent intent = new Intent(MapsActivity.this, LocationDetailsActivity.class);
+                    intent.putExtra("LOCATION_ID", db.getAllLocals().get(j).getId());
+                    startActivity(intent);
+
+                    return false;
+                }
+            });
             System.out.println(db.getAllLocals().get(i).getLat() + "---" + db.getAllLocals().get(i).getLon());
         }
 
@@ -104,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MarkerOptions marker = new MarkerOptions()
                         .position(new LatLng(point.latitude, point.longitude))
                         .title("Location no." + MainActivity.getCounter());
-                mMap.addMarker(marker);
+                //mMap.addMarker(marker);
 
                 Intent intent = new Intent(MapsActivity.this, CreateLocationActivity.class);
                 intent.putExtra("lat", point.latitude);
