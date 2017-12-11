@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:background="#B3ffffff">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/location_city"
