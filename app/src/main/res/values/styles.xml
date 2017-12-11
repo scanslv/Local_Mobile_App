@@ -6,7 +6,6 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowBackground">@drawable/background_img</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -14,22 +13,21 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="android:windowBackground">@drawable/background_img</item>
-    </style>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="allLayouts">
         <item name="android:padding">16dp</item>
+        <item name="android:background">@color/colorLightGrey</item>
     </style>
 
     <style name="button_light">
-        <item name="android:background">@drawable/custom_button_dark</item>
+        <item name="android:background">@drawable/custom_button_light</item>
     </style>
 
     <style name="button_dark">
-        <item name="android:background">@drawable/custom_button_light</item>
+        <item name="android:background">@drawable/custom_button_dark</item>
     </style>
 
     <style name="infoText">
