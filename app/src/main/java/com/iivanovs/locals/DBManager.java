@@ -173,6 +173,26 @@ public class DBManager extends SQLiteOpenHelper {
         return localList;
     }
 
+    public List<Local> searchByLonLat(String lon, String lat) {
+        ArrayList<Local> localList = new ArrayList<Local>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor;
+
+        cursor = db.rawQuery("select * from " + TABLE_LOCAL + " where " +
+                COL_LON + " like '%" + lon + "%' and " +
+                COL_LAT + " like '%" + lat + "%'", null);
+
+        while (cursor.moveToNext()) {
+            Local aLocal = new Local(cursor.getString(1), cursor.getString(2), cursor.getString(3));
+            aLocal.setId(cursor.getInt(0));
+            aLocal.setDate(cursor.getString(4));
+
+            localList.add(aLocal);
+        }
+
+        return localList;
+    }
+
     public long createLocalImg(LocalImg localImg) {
         SQLiteDatabase db = this.getWritableDatabase();
 

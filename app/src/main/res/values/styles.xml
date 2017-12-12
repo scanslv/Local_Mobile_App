@@ -25,11 +25,11 @@
     </style>
 
     <style name="button_light">
-        <item name="android:background">@drawable/custom_button_dark</item>
+        <item name="android:background">@drawable/custom_button_light</item>
     </style>
 
     <style name="button_dark">
-        <item name="android:background">@drawable/custom_button_light</item>
+        <item name="android:background">@drawable/custom_button_dark</item>
     </style>
 
     <style name="infoText">
