@@ -1,48 +1,48 @@
 package com.iivanovs.locals;
 
+import android.Manifest;
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.iivanovs.locals.entity.Local;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Created by c12437908 on 12/8/2017.
- */
+public class CreateLocationActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-public class CreateLocationActivity extends AppCompatActivity {
-
-    String mCurrentPhotoPath;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     private final String LOCATION_ID = "LOCATION_ID";
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -51,11 +51,14 @@ public class CreateLocationActivity extends AppCompatActivity {
     TextView locations_saved, pictures_taken, coordinates, address, address_title;
     EditText description;
     LinearLayout profile_info_layout, weather_info_layout, location_weather_info_layout;
-    ImageView img_view;
     RelativeLayout profile_info_btn, directions_btn, nearby_places_btn,
             save_btn, delete_btn, take_picture_btn, all_locationds_btn, weather_btn, map_btn, location_weather_info_btn;
     DBManager db;
     Local local;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private LocationRequest mLocationRequest;
+    private static int LOCATION_COUNTER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,7 @@ public class CreateLocationActivity extends AppCompatActivity {
 
         description = (EditText) findViewById(R.id.description);
         coordinates = (TextView) findViewById(R.id.coordinates);
+        new GetAddressPositionTask().execute(local);
         address = (TextView) findViewById(R.id.address);
 
         description.setBackgroundResource(R.drawable.text_field_style);
@@ -126,6 +130,7 @@ public class CreateLocationActivity extends AppCompatActivity {
                 return hideKeyboard();
             }
         });
+        buildGoogleApiClient();
 
         setButtonListeners();
     }
@@ -159,7 +164,6 @@ public class CreateLocationActivity extends AppCompatActivity {
         profile_info_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
                 getProfileInfo();
             }
@@ -171,6 +175,7 @@ public class CreateLocationActivity extends AppCompatActivity {
                 profile_info_layout.setVisibility(View.INVISIBLE);
                 weather_info_layout.setVisibility(View.INVISIBLE);
                 startActivity(new Intent(CreateLocationActivity.this, MainActivity.class));
+                CreateLocationActivity.this.finish();
             }
         });
 
@@ -178,7 +183,6 @@ public class CreateLocationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 profile_info_layout.setVisibility(View.INVISIBLE);
-                weather_info_layout.setVisibility(View.INVISIBLE);
                 getWeatherInfo();
             }
         });
@@ -191,6 +195,7 @@ public class CreateLocationActivity extends AppCompatActivity {
                     db.createLocal(local);
                     Toast.makeText(CreateLocationActivity.this, "Changes saved", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(CreateLocationActivity.this, MainActivity.class));
+                    CreateLocationActivity.this.finish();
                 }
             }
         });
@@ -198,7 +203,6 @@ public class CreateLocationActivity extends AppCompatActivity {
         delete_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(CreateLocationActivity.this, MapsActivity.class));
                 CreateLocationActivity.super.onBackPressed();
             }
         });
@@ -253,8 +257,7 @@ public class CreateLocationActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         ConstraintLayout left_drawer = (ConstraintLayout) findViewById(R.id.left_drawer);
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(left_drawer);
-        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+        menu.findItem(R.id.action_websearch).setVisible(false);
         hideKeyboard();
         return super.onPrepareOptionsMenu(menu);
     }
@@ -269,8 +272,21 @@ public class CreateLocationActivity extends AppCompatActivity {
     }
 
     private void getWeatherInfo() {
-        new WeatherData(CreateLocationActivity.this, null).execute(new Local("Current location", "53.3379581", "-6.2650733"));
-        weather_info_layout.setVisibility(View.VISIBLE);
+        if (weather_info_layout.getVisibility() == View.VISIBLE)
+            weather_info_layout.setVisibility(View.INVISIBLE);
+        else {
+            if (ActivityCompat.checkSelfPermission(CreateLocationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(CreateLocationActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(CreateLocationActivity.this, new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                return;
+            }
+            mLastLocation = LocationServices.FusedLocationApi
+                    .getLastLocation(mGoogleApiClient);
+            if (mLastLocation != null) {
+                new WeatherData(this, weather_info_layout).execute(new Local("Current location", Double.toString(mLastLocation.getLatitude()),
+                        Double.toString(mLastLocation.getLongitude())));
+            }
+        }
     }
     private boolean hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -317,43 +333,71 @@ public class CreateLocationActivity extends AppCompatActivity {
         }
     }
 
-    private void setPic(final ImageView imageView, final String img_path) {
-        final LinearLayout layout = (LinearLayout) findViewById(R.id.left_img_column);
-        ViewTreeObserver vto = layout.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                int width = layout.getMeasuredWidth();
-                int height = layout.getMeasuredHeight();
+    //location stuff code
 
-
-                // Get the dimensions of the View
-                int targetW = width;
-                int targetH = height;
-
-                // Get the dimensions of the bitmap
-                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-                bmOptions.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(img_path, bmOptions);
-                int photoW = bmOptions.outWidth;
-                int photoH = bmOptions.outHeight;
-
-                // Determine how much to scale down the image
-                int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
-
-                // Decode the image file into a Bitmap sized to fill the View
-                bmOptions.inJustDecodeBounds = false;
-                bmOptions.inSampleSize = scaleFactor;
-                bmOptions.inPurgeable = true;
-                bmOptions.inScaled = true;
-
-                Bitmap bitmap = BitmapFactory.decodeFile(img_path, bmOptions);
-                imageView.setImageBitmap(bitmap);
-
-            }
-        });
-
-
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(CreateLocationActivity.this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        createLocationRequest();
     }
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+
+        mLocationRequest.setInterval(100);
+        mLocationRequest.setFastestInterval(10);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    /**
+     * Google api callback methods
+     */
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i(MainActivity.class.getSimpleName(), "Connection failed: ConnectionResult.getErrorCode() = "
+                + result.getErrorCode());
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(CreateLocationActivity.this, new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        // Once connected with google api, get the location
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        //Whatever is required when the location changes
+    }
+
+    @Override
+    public void onConnectionSuspended(int arg0) {
+        mGoogleApiClient.connect();
+    }
+
+    public static void incrementCounter(){
+        LOCATION_COUNTER++;
+    }
+
+    public static int getCounter(){ return LOCATION_COUNTER; }
 }

@@ -22,8 +22,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.iivanovs.locals.entity.Local;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -65,41 +67,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //get intent and pass in the location to zoom to
         Intent intent = getIntent();
-        if(intent != null){
-            if(intent.getStringExtra("Option") != null)
+        if (intent != null) {
+            if (intent.getStringExtra("Option") != null)
                 intentOption = intent.getStringExtra("Option");
         }
 
-        if(intentOption.equals("NearbyLocations")){
+        if (intentOption.equals("NearbyLocations")) {
             LatLng local = new LatLng(intent.getDoubleExtra("Lat", 0), intent.getDoubleExtra("Lon", 0));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(local, 15.0f));
-        }
-        else if(intentOption.equals("Directions")){
+        } else if (intentOption.equals("Directions")) {
             currentLocation();
+        }else {
+            LatLng local = new LatLng(53.4239, -7.9407);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(local, 7.0f));
         }
 
-
-        for(int i = 0; i < db.getAllLocals().size(); i++){
-            final int j = i;
+        final ArrayList<Local> locals = (ArrayList<Local>) db.getAllLocals();
+        for (int i = 0; i < locals.size(); i++) {
+            final Local thisLocation = locals.get(i);
             final MarkerOptions markerO = new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(db.getAllLocals().get(i).getLat()), Double.parseDouble(db.getAllLocals().get(i).getLon())))
-                    .title(db.getAllLocals().get(i).getDescription());
+                    .position(new LatLng(Double.parseDouble(thisLocation.getLat()), Double.parseDouble(thisLocation.getLon())))
+                    .title(thisLocation.getDescription());
 
-            final Marker m = mMap.addMarker(markerO);
-            //mMap.addMarker(markerO);
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    marker = m;
-                    Intent intent = new Intent(MapsActivity.this, LocationDetailsActivity.class);
-                    intent.putExtra("LOCATION_ID", db.getAllLocals().get(j).getId());
-                    startActivity(intent);
-
-                    return false;
-                }
-            });
-            System.out.println(db.getAllLocals().get(i).getLat() + "---" + db.getAllLocals().get(i).getLon());
+            mMap.addMarker(markerO);
         }
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                double a = marker.getPosition().longitude;
+                double b = marker.getPosition().latitude;
+                ArrayList<Local> theseLocals = (ArrayList<Local>) db.searchByLonLat(String.valueOf(marker.getPosition().longitude),
+                        String.valueOf(marker.getPosition().latitude));
+                if (theseLocals.size() > 0) {
+                    Intent intent = new Intent(MapsActivity.this, LocationDetailsActivity.class);
+                    intent.putExtra("LOCATION_ID", theseLocals.get(0).getId());
+                    startActivity(intent);
+                    MapsActivity.this.finish();
+                }
+
+                return false;
+            }
+        });
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -109,12 +118,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MarkerOptions marker = new MarkerOptions()
                         .position(new LatLng(point.latitude, point.longitude))
                         .title("Location no." + MainActivity.getCounter());
-                //mMap.addMarker(marker);
 
                 Intent intent = new Intent(MapsActivity.this, CreateLocationActivity.class);
                 intent.putExtra("lat", point.latitude);
                 intent.putExtra("lon", point.longitude);
                 startActivity(intent);
+                MapsActivity.this.finish();
             }
         });
     }
@@ -124,7 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION }, 1);
+                    Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
         mLastLocation = LocationServices.FusedLocationApi
@@ -136,41 +145,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             origin = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
             Intent intent = getIntent();
-            if(intent != null){
-                if(intent.getStringExtra("Option") != null)
+            if (intent != null) {
+                if (intent.getStringExtra("Option") != null)
                     intentOption = intent.getStringExtra("Option");
             }
-             if(intentOption.equals("Directions")) {
+            if (intentOption.equals("Directions")) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, 13.0f));
                 LatLng destination = new LatLng(intent.getDoubleExtra("Lat", 0), intent.getDoubleExtra("Lon", 0));
 
-
-//                 Object dataTransfer[] = new Object[3];
-//                 String url = getDirectionsUrl(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
-//                 GetDirectionsData getDirectionsData = new GetDirectionsData();
-//                 dataTransfer[0] = mMap;
-//                 dataTransfer[1] = url;
-//                 dataTransfer[2] = destination;
-//                 getDirectionsData.execute(dataTransfer);
-
                 System.out.println("System out stuff printing...." + destination.toString());
-                 Geocoder geocoder;
-                 List<Address> addresses;
-                 geocoder = new Geocoder(this, Locale.getDefault());
+                Geocoder geocoder;
+                List<Address> addresses;
+                geocoder = new Geocoder(this, Locale.getDefault());
 
-                 try {
-                     addresses = geocoder.getFromLocation(destination.latitude, destination.longitude, 1);
-                     String address = addresses.get(0).getAddressLine(0);
-                     System.out.println(address);
+                try {
+                    addresses = geocoder.getFromLocation(destination.latitude, destination.longitude, 1);
+                    String address = addresses.get(0).getAddressLine(0);
+                    System.out.println(address);
 
-                     String uri = "https://www.google.com/maps/dir/?api=1&origin=" + origin.latitude+","+origin.longitude+"&destination="+destination.latitude+","+destination.longitude+"&travelmode=driving&dir_action=navigate";
-                     intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
-                     intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-                     startActivity(intent);
+                    String uri = "https://www.google.com/maps/dir/?api=1&origin=" + origin.latitude + "," + origin.longitude + "&destination=" + destination.latitude + "," + destination.longitude + "&travelmode=driving&dir_action=navigate";
+                    intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                    intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+                    startActivity(intent);
 
-                 } catch (IOException e) {
-                     e.printStackTrace();
-                 }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -217,19 +217,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
-
-
-//    Is used with GetDirectionsData, DataParser and commented out code in currentLocation() method
-//    to draw a path/direction on the map activity
-//    private String getDirectionsUrl(double latitude, double longitude, double end_latitude, double end_longitude)
-//    {
-//        StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
-//        googleDirectionsUrl.append("origin="+latitude+","+longitude);
-//        googleDirectionsUrl.append("&destination="+end_latitude+","+end_longitude);
-//        googleDirectionsUrl.append("&key="+"AIzaSyCAcfy-02UHSu2F6WeQ1rhQhkCr51eBL9g");
-//
-//        return googleDirectionsUrl.toString();
-//    }
 }

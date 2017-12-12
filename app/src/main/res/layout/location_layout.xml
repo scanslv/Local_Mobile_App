@@ -28,19 +28,21 @@
                 style="@style/buttonText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="sdcsdvsdc" />
+                android:paddingRight="32dp"/>
 
             <TextView
                 android:id="@+id/lonlat"
                 style="@style/infoText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="32dp" />
 
             <TextView
                 android:id="@+id/date"
                 style="@style/infoText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="32dp" />
 
         </LinearLayout>
 
